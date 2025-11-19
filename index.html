@@ -3,155 +3,168 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Halo Reader — Blue Theme</title>
+<title>Halo Reeder</title>
+<link rel="icon" href="data:," />
 <style>
 :root {
   --accent: #2c7be5;
   --bg: #f3f4f6;
   --card: #ffffff;
-  --text: #111;
   --muted: #666;
   --radius: 10px;
 }
 body {
-  margin:0; font-family:"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:var(--text);
+  margin:0;
+  font-family:"Segoe UI",Roboto,Arial,sans-serif;
+  background:var(--bg);
+  color:#111;
+  -webkit-font-smoothing:antialiased;
 }
 header {
-  display:flex; justify-content:space-between; align-items:center; padding:12px 18px;
-  background: linear-gradient(90deg,#0b63d6,#2c7be5); color:#fff;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 18px;
+  background:linear-gradient(90deg,#0b63d6,#2c7be5);
+  color:#fff;
 }
 header h1 { margin:0; font-size:20px; }
 header .subtitle { font-size:12px; opacity:0.8; }
-.icon-btn { background:transparent; border:0; color:#fff; cursor:pointer; font-size:20px; padding:6px; border-radius:6px; }
-.icon-btn:hover { background: rgba(255,255,255,0.1); }
-
-main { max-width:1100px; margin:16px auto; padding:16px; }
-.card { background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(0,0,0,0.05); margin-bottom:12px; }
-textarea#message { width:100%; min-height:120px; padding:10px; border-radius:8px; border:1px solid #ddd; font-size:16px; resize:none; }
-button { cursor:pointer; border:none; border-radius:8px; padding:8px 12px; margin:2px; }
-.btn { background:var(--accent); color:#fff; }
-.btn.ghost { background:transparent; color:var(--accent); border:1px solid rgba(44,123,229,0.2); }
-
-#words { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-.word-btn { background:#eef6ff; border-radius:8px; padding:8px 12px; cursor:pointer; display:flex; flex-direction:column; align-items:center; text-align:center; }
-
-#settings { display:none; position:fixed; top:64px; right:16px; width:300px; background:var(--card); padding:12px; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,0.12); z-index:999; }
-
-.toggle-dark { position:fixed; bottom:16px; right:16px; background:var(--accent); color:#fff; padding:10px; border-radius:50%; cursor:pointer; font-size:20px; }
-
-@media(max-width:720px){ #words { flex-direction:column; } }
+.icon-btn { background:transparent; border:0; color:#fff; cursor:pointer; font-size:18px; padding:6px; border-radius:6px; }
+.icon-btn:hover { background: rgba(255,255,255,0.06); }
+main { max-width:900px; margin:18px auto; padding:16px; }
+.card { background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(15,15,15,0.04); margin-bottom:12px; }
+button { background:var(--accent); border:0; color:#fff; padding:8px 10px; border-radius:8px; cursor:pointer; }
+button.ghost { background:transparent; color:var(--accent); border:1px solid rgba(44,123,229,0.12); }
+textarea { width:100%; min-height:120px; padding:8px; border-radius:8px; border:1px solid #ddd; font-size:16px; resize:none; }
+#textDisplay { white-space: pre-wrap; line-height:1.5; }
+.word { cursor:pointer; }
+#definitionBox { margin-top:8px; padding:8px; border:1px solid #ddd; border-radius:6px; background:#f9f9f9; }
+footer { padding:12px; text-align:center; color:#777; font-size:13px; }
+@media(max-width:720px){ main{padding:8px;} }
 </style>
 </head>
 <body>
 
 <header>
-  <div>
-    <h1>Halo Reader</h1>
-    <span class="subtitle">Blue Theme</span>
-  </div>
-  <button class="icon-btn" id="settingsBtn">⚙️</button>
+  <h1>Halo Reeder</h1>
+  <button id="darkModeBtn" class="icon-btn" title="Toggle Dark Mode">🌙</button>
 </header>
 
 <main>
   <div class="card">
-    <label for="imgUpload" class="btn">Pick Image</label>
-    <input type="file" id="imgUpload" accept="image/*">
-    <button class="btn" id="cameraBtn">Camera Capture</button>
-    <button class="btn" id="ocrBtn">Read Text (OCR)</button>
+    <button id="pickImageBtn">Pick Image</button>
+    <button id="cameraBtn">Use Camera</button>
   </div>
 
   <div class="card">
-    <label for="message">Text Output</label>
-    <textarea id="message" placeholder="Text will appear here..."></textarea>
-    <div>
-      <button class="btn" id="speakBtn">Speak Text</button>
-      <button class="btn ghost" id="copyBtn">Copy Text</button>
-      <button class="btn ghost" id="downloadBtn">Download Text</button>
-      <button class="btn ghost" id="translateBtn">Translate</button>
+    <strong>Extracted Text</strong>
+    <div id="textDisplay">No text yet</div>
+    <div id="definitionBox">Tap a word to see definition</div>
+    <div style="margin-top:8px; display:flex; gap:8px;">
+      <button id="speakBtn">Speak Text</button>
+      <button id="copyBtn" class="ghost">Copy</button>
+      <button id="downloadBtn" class="ghost">Download</button>
+      <button id="translateBtn" class="ghost">Translate</button>
     </div>
   </div>
-
-  <div class="card" id="words"></div>
 </main>
 
-<div id="settings">
-  <h3>Settings</h3>
-  <label>Dark Mode <input type="checkbox" id="darkMode"></label>
-</div>
-<button class="toggle-dark" id="darkToggle">🌓</button>
+<footer>
+Halo Reeder — Blue Theme AAC Reader
+</footer>
 
-<script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 <script>
-// Placeholder words for tap-to-copy / definition
-const wordsDiv = document.getElementById('words');
-const message = document.getElementById('message');
-const words = [
-  {word:"Hello", emoji:"👋"}, {word:"Water", emoji:"💧"}, {word:"Eat", emoji:"🍎"},
-  {word:"Park", emoji:"🌳"}, {word:"Home", emoji:"🏠"}, {word:"School", emoji:"🏫"},
-  {word:"Friend", emoji:"🤝"}, {word:"Book", emoji:"📚"}, {word:"Car", emoji:"🚗"}, {word:"Food", emoji:"🍔"}
-];
-words.forEach(w=>{
-  const btn = document.createElement('div');
-  btn.className="word-btn";
-  btn.innerHTML = `<div style="font-size:24px">${w.emoji}</div><div>${w.word}</div>`;
-  btn.onclick = ()=>message.value += w.word+" ";
-  wordsDiv.appendChild(btn);
-});
+const textDisplay = document.getElementById('textDisplay');
+const definitionBox = document.getElementById('definitionBox');
 
-// TTS
-document.getElementById('speakBtn').onclick = ()=>{
-  if(!message.value) return;
-  const utter = new SpeechSynthesisUtterance(message.value);
+// Dark mode
+document.getElementById('darkModeBtn').onclick = () => {
+  document.body.style.background = document.body.style.background === '#111' ? 'var(--bg)' : '#111';
+  document.body.style.color = document.body.style.color === '#fff' ? '#111' : '#fff';
+}
+
+// Speak text
+document.getElementById('speakBtn').onclick = () => {
+  const utter = new SpeechSynthesisUtterance(textDisplay.innerText);
   speechSynthesis.speak(utter);
-};
+}
 
 // Copy text
-document.getElementById('copyBtn').onclick = ()=>navigator.clipboard.writeText(message.value);
+document.getElementById('copyBtn').onclick = () => {
+  navigator.clipboard.writeText(textDisplay.innerText);
+  alert("Text copied!");
+}
 
-// Download
-document.getElementById('downloadBtn').onclick = ()=>{
-  const blob = new Blob([message.value], {type:"text/plain"});
+// Download text
+document.getElementById('downloadBtn').onclick = () => {
+  const blob = new Blob([textDisplay.innerText], {type:'text/plain'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = "text.txt";
+  a.download = 'text.txt';
   a.click();
-};
+}
 
-// Translate placeholder
-document.getElementById('translateBtn').onclick = ()=>alert("Translation not implemented yet.");
+// Translate text (simple example using Google Translate link)
+document.getElementById('translateBtn').onclick = () => {
+  const text = encodeURIComponent(textDisplay.innerText);
+  window.open(`https://translate.google.com/?sl=auto&tl=en&text=${text}&op=translate`, '_blank');
+}
 
-// OCR
-document.getElementById('imgUpload').onchange = e=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  Tesseract.recognize(file, 'eng').then(({data:{text}})=>message.value=text);
-};
+// Tap word → definition
+textDisplay.onclick = (e) => {
+  if(e.target.classList.contains('word')){
+    const word = e.target.innerText;
+    fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
+      .then(res => res.json())
+      .then(data => {
+        if(data[0] && data[0].meanings && data[0].meanings[0]){
+          definitionBox.innerText = data[0].meanings[0].definitions[0].definition;
+        } else {
+          definitionBox.innerText = 'Definition not found';
+        }
+      })
+      .catch(()=> definitionBox.innerText = 'Definition not found');
+  }
+}
 
-// Camera capture
-document.getElementById('cameraBtn').onclick = async ()=>{
-  const stream = await navigator.mediaDevices.getUserMedia({video:true});
+// Image picking / camera
+document.getElementById('pickImageBtn').onclick = async () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    processImage(file);
+  };
+  input.click();
+}
+
+document.getElementById('cameraBtn').onclick = async () => {
   const video = document.createElement('video');
-  video.srcObject = stream;
-  video.play();
+  video.autoplay = true;
   document.body.appendChild(video);
-  setTimeout(()=>{ stream.getTracks().forEach(t=>t.stop()); video.remove(); },5000);
-};
+  const stream = await navigator.mediaDevices.getUserMedia({video:true});
+  video.srcObject = stream;
+  video.onclick = async () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video,0,0);
+    stream.getTracks().forEach(track => track.stop());
+    video.remove();
+    canvas.toBlob(processImage);
+  }
+}
 
-// Dark mode toggle
-document.getElementById('darkMode').onchange = e=>{
-  document.body.style.background = e.target.checked ? "#111" : "#f3f4f6";
-  document.body.style.color = e.target.checked ? "#fff" : "#111";
-};
-document.getElementById('darkToggle').onclick = ()=>{
-  document.getElementById('darkMode').checked = !document.getElementById('darkMode').checked;
-  document.getElementById('darkMode').dispatchEvent(new Event('change'));
-};
-
-// Settings panel
-document.getElementById('settingsBtn').onclick = ()=>{
-  const s = document.getElementById('settings');
-  s.style.display = s.style.display==="block"?"none":"block";
-};
+function processImage(file){
+  Tesseract.recognize(file,'eng',{logger:m=>console.log(m)}).then(({data:{text}})=>{
+    // wrap words in spans
+    textDisplay.innerHTML = text.split(/\s+/).map(w=>`<span class="word">${w}</span>`).join(' ');
+  });
+}
 </script>
+
 </body>
-</html>
+</html>">
