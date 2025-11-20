@@ -36,6 +36,20 @@ button.btn { background:var(--accent); border:0; color:#fff; padding:8px 10px; b
 button.btn.ghost { background:transparent; color:var(--accent); border:1px solid rgba(44,123,229,0.12); }
 textarea, input { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; font-size:16px; }
 #imagePreview { max-width:100%; margin-top:12px; border-radius:8px; }
+#dictionaryPopup {
+  display:none;
+  position:fixed;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  background:var(--card);
+  padding:16px;
+  border-radius:10px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.2);
+  max-width:80%;
+  z-index:999;
+}
+#dictionaryPopup h3 { margin-top:0; }
+#dictionaryPopup button { margin-top:12px; }
 footer { text-align:center; color:#777; font-size:13px; padding:12px; }
 
 @media(max-width:720px){ header { flex-direction:column; align-items:flex-start; gap:8px; } }
@@ -66,10 +80,15 @@ footer { text-align:center; color:#777; font-size:13px; padding:12px; }
       <button id="speakBtn" class="btn">Speak</button>
       <button id="copyBtn" class="btn ghost">Copy</button>
       <button id="downloadBtn" class="btn ghost">Download</button>
-      <button id="translateBtn" class="btn ghost">Translate</button>
     </div>
   </div>
 </main>
+
+<div id="dictionaryPopup">
+  <h3 id="dictWord"></h3>
+  <p id="dictDef">Loading...</p>
+  <button id="closeDict" class="btn ghost">Close</button>
+</div>
 
 <footer>Halo Reeder — Blue Theme | Mobile-first | GitHub Pages ready</footer>
 
@@ -147,12 +166,26 @@ downloadBtn.onclick = () => {
   a.click();
 };
 
-// Translate (Google Translate)
-const translateBtn = document.getElementById('translateBtn');
-translateBtn.onclick = () => {
-  const text = encodeURIComponent(textOutput.value);
-  window.open(`https://translate.google.com/?sl=auto&tl=en&text=${text}&op=translate`);
-};
+// Dictionary
+const dictPopup = document.getElementById('dictionaryPopup');
+const dictWord = document.getElementById('dictWord');
+const dictDef = document.getElementById('dictDef');
+const closeDict = document.getElementById('closeDict');
+textOutput.addEventListener('dblclick', async (e)=>{
+  const selection = window.getSelection().toString() || textOutput.value.substring(textOutput.selectionStart, textOutput.selectionEnd);
+  if(!selection) return;
+  dictWord.textContent = selection;
+  dictDef.textContent = 'Loading...';
+  dictPopup.style.display='block';
+  try{
+    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${selection}`);
+    const data = await res.json();
+    if(data[0] && data[0].meanings){
+      dictDef.innerHTML = data[0].meanings.map(m => `<b>${m.partOfSpeech}</b>: ${m.definitions[0].definition}`).join('<br>');
+    } else dictDef.textContent = 'No definition found';
+  }catch{ dictDef.textContent = 'Error fetching definition'; }
+});
+closeDict.onclick = ()=> dictPopup.style.display='none';
 </script>
 
 </body>
