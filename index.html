@@ -13,146 +13,85 @@
   --muted: #666;
   --radius: 10px;
 }
+* { box-sizing: border-box; }
 body {
-  margin:0;
-  font-family:"Segoe UI",Roboto,Arial,sans-serif;
-  background:var(--bg);
-  color:#111;
-  -webkit-font-smoothing:antialiased;
+  margin:0; font-family:"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:#111; -webkit-font-smoothing:antialiased;
+  transition: background 0.2s, color 0.2s;
 }
-header {
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 18px;
-  background:linear-gradient(90deg,#0b63d6,#2c7be5);
-  color:#fff;
-}
+header { display:flex; justify-content:space-between; align-items:center; padding:12px 18px; background:linear-gradient(90deg,#0b63d6,#2c7be5); color:#fff; }
 header h1 { margin:0; font-size:20px; }
-header .subtitle { font-size:12px; opacity:0.8; }
 .icon-btn { background:transparent; border:0; color:#fff; cursor:pointer; font-size:18px; padding:6px; border-radius:6px; }
 .icon-btn:hover { background: rgba(255,255,255,0.06); }
 main { max-width:900px; margin:18px auto; padding:16px; }
-.card { background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(15,15,15,0.04); margin-bottom:12px; }
-button { background:var(--accent); border:0; color:#fff; padding:8px 10px; border-radius:8px; cursor:pointer; }
-button.ghost { background:transparent; color:var(--accent); border:1px solid rgba(44,123,229,0.12); }
-textarea { width:100%; min-height:120px; padding:8px; border-radius:8px; border:1px solid #ddd; font-size:16px; resize:none; }
-#textDisplay { white-space: pre-wrap; line-height:1.5; }
-.word { cursor:pointer; }
-#definitionBox { margin-top:8px; padding:8px; border:1px solid #ddd; border-radius:6px; background:#f9f9f9; }
-footer { padding:12px; text-align:center; color:#777; font-size:13px; }
-@media(max-width:720px){ main{padding:8px;} }
+.card { background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(15,15,15,0.04); margin-bottom:12px; transition: background 0.2s, color 0.2s; }
+textarea { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; min-height:120px; font-size:16px; resize:none; }
+#textDisplay { margin-top:12px; display:flex; flex-wrap:wrap; gap:6px; }
+.word { background:var(--accent); color:#fff; padding:6px 10px; border-radius:8px; cursor:pointer; transition: background 0.2s; }
+.word:hover { background:#0b63d6; }
+button { padding:8px 10px; border-radius:8px; border:none; cursor:pointer; background:var(--accent); color:#fff; margin-right:6px; transition: background 0.2s; }
+button.ghost { background:transparent; border:1px solid rgba(44,123,229,0.2); color:var(--accent); }
+button:hover { opacity:0.9; }
+#darkModeBtn { margin-left:6px; }
+@media(max-width:720px){ textarea{ min-height:100px; } }
 </style>
 </head>
 <body>
+
+<header>
+  <h1>Halo Reeder</h1>
+  <button id="darkModeBtn" class="icon-btn" title="Toggle Dark Mode">🌓</button>
+</header>
+
 <main>
   <div class="card">
-    <button id="pickImageBtn">Pick Image</button>
-    <button id="cameraBtn">Use Camera</button>
+    <label>Paste or type text:</label>
+    <textarea id="inputText" placeholder="Type or paste text here..."></textarea>
+    <div style="margin-top:8px;">
+      <button id="processBtn">Process Text</button>
+      <button id="clearBtn" class="ghost">Clear</button>
+    </div>
   </div>
 
   <div class="card">
-    <strong>Extracted Text</strong>
-    <div id="textDisplay">No text yet</div>
-    <div id="definitionBox">Tap a word to see definition</div>
-    <div style="margin-top:8px; display:flex; gap:8px;">
-      <button id="speakBtn">Speak Text</button>
-      <button id="copyBtn" class="ghost">Copy</button>
-      <button id="downloadBtn" class="ghost">Download</button>
-      <button id="translateBtn" class="ghost">Translate</button>
-    </div>
+    <strong>Tap a word to see definition:</strong>
+    <div id="textDisplay"></div>
   </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 <script>
-const textDisplay = document.getElementById('textDisplay');
-const definitionBox = document.getElementById('definitionBox');
-
-// Dark mode
-document.getElementById('darkModeBtn').onclick = () => {
-  document.body.style.background = document.body.style.background === '#111' ? 'var(--bg)' : '#111';
-  document.body.style.color = document.body.style.color === '#fff' ? '#111' : '#fff';
-}
-
-// Speak text
-document.getElementById('speakBtn').onclick = () => {
-  const utter = new SpeechSynthesisUtterance(textDisplay.innerText);
-  speechSynthesis.speak(utter);
-}
-
-// Copy text
-document.getElementById('copyBtn').onclick = () => {
-  navigator.clipboard.writeText(textDisplay.innerText);
-  alert("Text copied!");
-}
-
-// Download text
-document.getElementById('downloadBtn').onclick = () => {
-  const blob = new Blob([textDisplay.innerText], {type:'text/plain'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'text.txt';
-  a.click();
-}
-
-// Translate text (simple example using Google Translate link)
-document.getElementById('translateBtn').onclick = () => {
-  const text = encodeURIComponent(textDisplay.innerText);
-  window.open(`https://translate.google.com/?sl=auto&tl=en&text=${text}&op=translate`, '_blank');
-}
-
-// Tap word → definition
-textDisplay.onclick = (e) => {
-  if(e.target.classList.contains('word')){
-    const word = e.target.innerText;
-    fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
-      .then(res => res.json())
-      .then(data => {
-        if(data[0] && data[0].meanings && data[0].meanings[0]){
-          definitionBox.innerText = data[0].meanings[0].definitions[0].definition;
-        } else {
-          definitionBox.innerText = 'Definition not found';
-        }
-      })
-      .catch(()=> definitionBox.innerText = 'Definition not found');
-  }
-}
-
-// Image picking / camera
-document.getElementById('pickImageBtn').onclick = async () => {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.onchange = e => {
-    const file = e.target.files[0];
-    processImage(file);
-  };
-  input.click();
-}
-
-document.getElementById('cameraBtn').onclick = async () => {
-  const video = document.createElement('video');
-  video.autoplay = true;
-  document.body.appendChild(video);
-  const stream = await navigator.mediaDevices.getUserMedia({video:true});
-  video.srcObject = stream;
-  video.onclick = async () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video,0,0);
-    stream.getTracks().forEach(track => track.stop());
-    video.remove();
-    canvas.toBlob(processImage);
-  }
-}
-
-function processImage(file){
-  Tesseract.recognize(file,'eng',{logger:m=>console.log(m)}).then(({data:{text}})=>{
-    // wrap words in spans
-    textDisplay.innerHTML = text.split(/\s+/).map(w=>`<span class="word">${w}</span>`).join(' ');
+// Dark mode toggle
+const darkModeBtn = document.getElementById('darkModeBtn');
+let darkMode = false;
+darkModeBtn.onclick = () => {
+  darkMode = !darkMode;
+  document.body.style.background = darkMode ? '#111' : 'var(--bg)';
+  document.body.style.color = darkMode ? '#fff' : '#111';
+  document.querySelectorAll('.card').forEach(c=>{
+    c.style.background = darkMode ? '#222' : 'var(--card)';
+    c.style.color = darkMode ? '#fff' : '#111';
+    c.style.borderColor = darkMode ? '#444' : '#ddd';
   });
+}
+
+// Process text and split into tappable words
+const inputText = document.getElementById('inputText');
+const textDisplay = document.getElementById('textDisplay');
+document.getElementById('processBtn').onclick = () => {
+  textDisplay.innerHTML = '';
+  const words = inputText.value.split(/\s+/).filter(w=>w);
+  words.forEach(w=>{
+    const span = document.createElement('span');
+    span.className = 'word';
+    span.textContent = w;
+    span.onclick = () => {
+      window.open(`https://www.merriam-webster.com/dictionary/${encodeURIComponent(w)}`, '_blank');
+    };
+    textDisplay.appendChild(span);
+  });
+}
+document.getElementById('clearBtn').onclick = () => {
+  inputText.value = '';
+  textDisplay.innerHTML = '';
 }
 </script>
 
