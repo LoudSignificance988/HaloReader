@@ -48,6 +48,8 @@ button:hover { opacity:0.9; }
     <textarea id="inputText" placeholder="Type or paste text here..."></textarea>
     <div style="margin-top:8px;">
       <button id="processBtn">Process Text</button>
+      <button id="readBtn">Read Text</button>
+      <button id="stopBtn" class="ghost">Stop Reading</button>
       <button id="clearBtn" class="ghost">Clear</button>
     </div>
   </div>
@@ -73,7 +75,7 @@ darkModeBtn.onclick = () => {
   });
 }
 
-// Process text and split into tappable words
+// Process text into clickable words
 const inputText = document.getElementById('inputText');
 const textDisplay = document.getElementById('textDisplay');
 document.getElementById('processBtn').onclick = () => {
@@ -89,9 +91,25 @@ document.getElementById('processBtn').onclick = () => {
     textDisplay.appendChild(span);
   });
 }
+
+// Read text using Web Speech API
+let synth = window.speechSynthesis;
+let utter;
+document.getElementById('readBtn').onclick = () => {
+  if(!inputText.value) return;
+  if(synth.speaking) synth.cancel();
+  utter = new SpeechSynthesisUtterance(inputText.value);
+  synth.speak(utter);
+}
+document.getElementById('stopBtn').onclick = () => {
+  if(synth.speaking) synth.cancel();
+}
+
+// Clear
 document.getElementById('clearBtn').onclick = () => {
   inputText.value = '';
   textDisplay.innerHTML = '';
+  if(synth.speaking) synth.cancel();
 }
 </script>
 
