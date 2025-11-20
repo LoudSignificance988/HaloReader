@@ -10,136 +10,149 @@
   --accent: #2c7be5;
   --bg: #f3f4f6;
   --card: #ffffff;
+  --text: #111;
   --muted: #666;
   --radius: 10px;
 }
-* { box-sizing: border-box; }
 body {
-  margin:0; font-family:"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:#111; -webkit-font-smoothing:antialiased;
-  transition: background 0.2s, color 0.2s;
+  margin:0;
+  font-family:"Segoe UI",Roboto,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
 }
-header { display:flex; justify-content:space-between; align-items:center; padding:12px 18px; background:linear-gradient(90deg,#0b63d6,#2c7be5); color:#fff; }
+header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 18px;
+  background:linear-gradient(90deg,#0b63d6,#2c7be5);
+  color:#fff;
+}
 header h1 { margin:0; font-size:20px; }
 .icon-btn { background:transparent; border:0; color:#fff; cursor:pointer; font-size:18px; padding:6px; border-radius:6px; }
-.icon-btn:hover { background: rgba(255,255,255,0.06); }
-main { max-width:900px; margin:18px auto; padding:16px; }
-.card { background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(15,15,15,0.04); margin-bottom:12px; transition: background 0.2s, color 0.2s; }
-textarea { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; min-height:120px; font-size:16px; resize:none; }
-#textDisplay { margin-top:12px; display:flex; flex-wrap:wrap; gap:6px; }
-.word { background:var(--accent); color:#fff; padding:6px 10px; border-radius:8px; cursor:pointer; transition: background 0.2s; }
-.word:hover { background:#0b63d6; }
-button { padding:8px 10px; border-radius:8px; border:none; cursor:pointer; background:var(--accent); color:#fff; margin-right:6px; transition: background 0.2s; }
-button.ghost { background:transparent; border:1px solid rgba(44,123,229,0.2); color:var(--accent); }
-button:hover { opacity:0.9; }
-video { width:100%; border-radius:10px; margin-top:8px; }
-canvas { display:none; }
-@media(max-width:720px){ textarea{ min-height:100px; } }
+.icon-btn:hover { background: rgba(255,255,255,0.1); }
+main { max-width:1100px; margin:18px auto; padding:16px; }
+.card { background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(15,15,15,0.04); margin-bottom:12px; }
+button.btn { background:var(--accent); border:0; color:#fff; padding:8px 10px; border-radius:8px; cursor:pointer; }
+button.btn.ghost { background:transparent; color:var(--accent); border:1px solid rgba(44,123,229,0.12); }
+textarea, input { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; font-size:16px; }
+#imagePreview { max-width:100%; margin-top:12px; border-radius:8px; }
+footer { text-align:center; color:#777; font-size:13px; padding:12px; }
+
+@media(max-width:720px){ header { flex-direction:column; align-items:flex-start; gap:8px; } }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Halo Reeder</h1>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <img src="logo.png" alt="Halo Logo" style="height:32px;">
+    <h1>Halo Reeder</h1>
+  </div>
   <button id="darkModeBtn" class="icon-btn" title="Toggle Dark Mode">🌓</button>
 </header>
 
 <main>
   <div class="card">
-    <label>Paste or type text:</label>
-    <textarea id="inputText" placeholder="Type or paste text here..."></textarea>
-    <div style="margin-top:8px;">
-      <button id="processBtn">Process Text</button>
-      <button id="readBtn">Read Text</button>
-      <button id="stopBtn" class="ghost">Stop Reading</button>
-      <button id="clearBtn" class="ghost">Clear</button>
+    <button id="pickImage" class="btn">Pick Image</button>
+    <button id="cameraCapture" class="btn ghost">Camera</button>
+    <input type="file" id="fileInput" accept="image/*" style="display:none">
+    <video id="cameraStream" autoplay style="display:none; width:100%; margin-top:12px; border-radius:8px;"></video>
+    <img id="imagePreview" src="" alt="">
+  </div>
+
+  <div class="card">
+    <textarea id="textOutput" placeholder="OCR text will appear here..." rows="6"></textarea>
+    <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+      <button id="speakBtn" class="btn">Speak</button>
+      <button id="copyBtn" class="btn ghost">Copy</button>
+      <button id="downloadBtn" class="btn ghost">Download</button>
+      <button id="translateBtn" class="btn ghost">Translate</button>
     </div>
-  </div>
-
-  <div class="card">
-    <label>Or capture from camera:</label>
-    <video id="camera" autoplay playsinline></video>
-    <button id="captureBtn">Capture & Read</button>
-    <canvas id="snapshot"></canvas>
-  </div>
-
-  <div class="card">
-    <strong>Tap a word to see definition:</strong>
-    <div id="textDisplay"></div>
   </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+<footer>Halo Reeder — Blue Theme | Mobile-first | GitHub Pages ready</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/kokoro-js/dist/kokoro.min.js"></script>
 <script>
-// Dark mode
-const darkModeBtn = document.getElementById('darkModeBtn');
-let darkMode = false;
-darkModeBtn.onclick = () => {
-  darkMode = !darkMode;
-  document.body.style.background = darkMode ? '#111' : 'var(--bg)';
-  document.body.style.color = darkMode ? '#fff' : '#111';
-  document.querySelectorAll('.card').forEach(c=>{
-    c.style.background = darkMode ? '#222' : 'var(--card)';
-    c.style.color = darkMode ? '#fff' : '#111';
-    c.style.borderColor = darkMode ? '#444' : '#ddd';
-  });
+// Dark Mode
+const darkBtn = document.getElementById('darkModeBtn');
+darkBtn.onclick = () => {
+  document.body.style.background = document.body.style.background === 'black' ? '#f3f4f6' : 'black';
+  document.body.style.color = document.body.style.color === '#fff' ? '#111' : '#fff';
+};
+
+// Image Picking
+const pickImageBtn = document.getElementById('pickImage');
+const fileInput = document.getElementById('fileInput');
+const imagePreview = document.getElementById('imagePreview');
+pickImageBtn.onclick = () => fileInput.click();
+fileInput.onchange = e => {
+  const file = e.target.files[0];
+  if(file){
+    const url = URL.createObjectURL(file);
+    imagePreview.src = url;
+    recognizeText(url);
+  }
+};
+
+// Camera Capture
+const camBtn = document.getElementById('cameraCapture');
+const camStream = document.getElementById('cameraStream');
+let stream;
+camBtn.onclick = async () => {
+  if(!stream){
+    stream = await navigator.mediaDevices.getUserMedia({video:true});
+    camStream.srcObject = stream;
+    camStream.style.display='block';
+  } else {
+    const track = stream.getVideoTracks()[0];
+    const imageCapture = new ImageCapture(track);
+    imageCapture.takePhoto().then(blob=>{
+      const url = URL.createObjectURL(blob);
+      imagePreview.src = url;
+      recognizeText(url);
+    });
+  }
+};
+
+// OCR
+const textOutput = document.getElementById('textOutput');
+function recognizeText(imgUrl){
+  Tesseract.recognize(imgUrl, 'eng', {logger: m=>console.log(m)})
+    .then(({data:{text}})=> textOutput.value = text);
 }
 
-// DOM
-const inputText = document.getElementById('inputText');
-const textDisplay = document.getElementById('textDisplay');
-const synth = window.speechSynthesis;
-let utter;
+// TTS
+const speakBtn = document.getElementById('speakBtn');
+speakBtn.onclick = () => {
+  const text = textOutput.value;
+  if(!text) return;
+  const utter = new SpeechSynthesisUtterance(text);
+  speechSynthesis.speak(utter);
+};
 
-// Process text into clickable words
-document.getElementById('processBtn').onclick = () => {
-  textDisplay.innerHTML = '';
-  const words = inputText.value.split(/\s+/).filter(w=>w);
-  words.forEach(w=>{
-    const span = document.createElement('span');
-    span.className = 'word';
-    span.textContent = w;
-    span.onclick = () => {
-      window.open(`https://www.merriam-webster.com/dictionary/${encodeURIComponent(w)}`, '_blank');
-    };
-    textDisplay.appendChild(span);
-  });
-}
+// Copy
+const copyBtn = document.getElementById('copyBtn');
+copyBtn.onclick = () => navigator.clipboard.writeText(textOutput.value);
 
-// Read text
-document.getElementById('readBtn').onclick = () => {
-  if(!inputText.value) return;
-  if(synth.speaking) synth.cancel();
-  utter = new SpeechSynthesisUtterance(inputText.value);
-  synth.speak(utter);
-}
-document.getElementById('stopBtn').onclick = () => { if(synth.speaking) synth.cancel(); }
+// Download
+const downloadBtn = document.getElementById('downloadBtn');
+downloadBtn.onclick = () => {
+  const blob = new Blob([textOutput.value], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download='text.txt';
+  a.click();
+};
 
-// Clear
-document.getElementById('clearBtn').onclick = () => {
-  inputText.value = '';
-  textDisplay.innerHTML = '';
-  if(synth.speaking) synth.cancel();
-}
-
-// Camera & OCR
-const video = document.getElementById('camera');
-const canvas = document.getElementById('snapshot');
-const captureBtn = document.getElementById('captureBtn');
-
-navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-  video.srcObject = stream;
-});
-
-captureBtn.onclick = async () => {
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video,0,0);
-  const { data: { text } } = await Tesseract.recognize(canvas, 'eng', { logger: m => console.log(m) });
-  inputText.value = text.trim();
-  document.getElementById('processBtn').click();
-  document.getElementById('readBtn').click();
-}
+// Translate (Google Translate)
+const translateBtn = document.getElementById('translateBtn');
+translateBtn.onclick = () => {
+  const text = encodeURIComponent(textOutput.value);
+  window.open(`https://translate.google.com/?sl=auto&tl=en&text=${text}&op=translate`);
+};
 </script>
 
 </body>
