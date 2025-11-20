@@ -31,7 +31,8 @@ textarea { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; m
 button { padding:8px 10px; border-radius:8px; border:none; cursor:pointer; background:var(--accent); color:#fff; margin-right:6px; transition: background 0.2s; }
 button.ghost { background:transparent; border:1px solid rgba(44,123,229,0.2); color:var(--accent); }
 button:hover { opacity:0.9; }
-#darkModeBtn { margin-left:6px; }
+video { width:100%; border-radius:10px; margin-top:8px; }
+canvas { display:none; }
 @media(max-width:720px){ textarea{ min-height:100px; } }
 </style>
 </head>
@@ -55,13 +56,21 @@ button:hover { opacity:0.9; }
   </div>
 
   <div class="card">
+    <label>Or capture from camera:</label>
+    <video id="camera" autoplay playsinline></video>
+    <button id="captureBtn">Capture & Read</button>
+    <canvas id="snapshot"></canvas>
+  </div>
+
+  <div class="card">
     <strong>Tap a word to see definition:</strong>
     <div id="textDisplay"></div>
   </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
 <script>
-// Dark mode toggle
+// Dark mode
 const darkModeBtn = document.getElementById('darkModeBtn');
 let darkMode = false;
 darkModeBtn.onclick = () => {
@@ -75,9 +84,13 @@ darkModeBtn.onclick = () => {
   });
 }
 
-// Process text into clickable words
+// DOM
 const inputText = document.getElementById('inputText');
 const textDisplay = document.getElementById('textDisplay');
+const synth = window.speechSynthesis;
+let utter;
+
+// Process text into clickable words
 document.getElementById('processBtn').onclick = () => {
   textDisplay.innerHTML = '';
   const words = inputText.value.split(/\s+/).filter(w=>w);
@@ -92,24 +105,40 @@ document.getElementById('processBtn').onclick = () => {
   });
 }
 
-// Read text using Web Speech API
-let synth = window.speechSynthesis;
-let utter;
+// Read text
 document.getElementById('readBtn').onclick = () => {
   if(!inputText.value) return;
   if(synth.speaking) synth.cancel();
   utter = new SpeechSynthesisUtterance(inputText.value);
   synth.speak(utter);
 }
-document.getElementById('stopBtn').onclick = () => {
-  if(synth.speaking) synth.cancel();
-}
+document.getElementById('stopBtn').onclick = () => { if(synth.speaking) synth.cancel(); }
 
 // Clear
 document.getElementById('clearBtn').onclick = () => {
   inputText.value = '';
   textDisplay.innerHTML = '';
   if(synth.speaking) synth.cancel();
+}
+
+// Camera & OCR
+const video = document.getElementById('camera');
+const canvas = document.getElementById('snapshot');
+const captureBtn = document.getElementById('captureBtn');
+
+navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+  video.srcObject = stream;
+});
+
+captureBtn.onclick = async () => {
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video,0,0);
+  const { data: { text } } = await Tesseract.recognize(canvas, 'eng', { logger: m => console.log(m) });
+  inputText.value = text.trim();
+  document.getElementById('processBtn').click();
+  document.getElementById('readBtn').click();
 }
 </script>
 
