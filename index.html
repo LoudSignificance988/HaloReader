@@ -4,8 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Halo Reeder</title>
-<link rel="icon" href="logo.png" type="image/png">
-<link rel="apple-touch-icon" href="logo.png">
+
+<!-- Home Screen / Web App Support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Halo Reeder">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#2c7be5">
+
+<!-- Home Screen Icons -->
+<link rel="apple-touch-icon" href="logo-180.png" sizes="180x180">
+<link rel="apple-touch-icon" href="logo-152.png" sizes="152x152">
+<link rel="apple-touch-icon" href="logo-120.png" sizes="120x120">
+
+<!-- Fallback favicon -->
+<link rel="icon" href="logo.png">
+
 <style>
 :root {
   --accent:#2c7be5;
@@ -15,6 +28,7 @@
   --muted:#666;
   --radius:10px;
 }
+
 body {
   margin:0;
   font-family:"Segoe UI",Roboto,Arial,sans-serif;
@@ -23,21 +37,25 @@ body {
   -webkit-font-smoothing:antialiased;
   transition:0.3s;
 }
+
+/* DARK MODE */
 .dark {
   --bg:#0c0c0c;
   --card:#1a1a1a;
   --text:#eee;
 }
+
 header {
   display:flex;
-  flex-direction:column;
+  justify-content:space-between;
   align-items:center;
-  padding:16px;
+  padding:12px 18px;
   background:linear-gradient(90deg,#0b63d6,#2c7be5);
   color:#fff;
 }
-header img { height:80px; margin-bottom:8px; }
-header h1 { margin:0; font-size:24px; }
+
+header h1 { margin:0; font-size:20px; }
+
 .icon-btn {
   background:transparent;
   border:0;
@@ -46,29 +64,33 @@ header h1 { margin:0; font-size:24px; }
   font-size:18px;
   padding:6px;
   border-radius:6px;
-  margin-top:8px;
 }
-main { max-width:720px; margin:16px auto; padding:16px; }
+
+main { max-width:1100px; margin:18px auto; padding:16px; }
+
 .card {
   background:var(--card);
   border-radius:var(--radius);
-  padding:16px;
-  box-shadow:0 6px 18px rgba(15,15,15,0.05);
-  margin-bottom:16px;
+  padding:12px;
+  box-shadow:0 6px 18px rgba(15,15,15,0.04);
+  margin-bottom:12px;
 }
+
 button.btn {
   background:var(--accent);
   border:0;
   color:#fff;
-  padding:10px 12px;
+  padding:8px 10px;
   border-radius:8px;
   cursor:pointer;
 }
+
 button.btn.ghost {
   background:transparent;
   color:var(--accent);
   border:1px solid rgba(44,123,229,0.25);
 }
+
 textarea, input, select {
   width:100%;
   padding:10px;
@@ -76,12 +98,13 @@ textarea, input, select {
   border:1px solid #ccc;
   font-size:16px;
 }
-#imagePreview, #cameraStream {
+
+#imagePreview {
   max-width:100%;
   margin-top:12px;
   border-radius:8px;
 }
-/* DICTIONARY POPUP */
+
 #dictionaryPopup {
   display:none;
   position:fixed;
@@ -92,52 +115,56 @@ textarea, input, select {
   border-radius:10px;
   box-shadow:0 6px 20px rgba(0,0,0,0.4);
   max-width:80%;
-  max-height:70vh;
-  overflow-y:auto;
   z-index:999;
 }
-#dictionaryPopup h3 { margin-top:0; }
-footer { text-align:center; color:#777; font-size:13px; padding:12px; }
+
+footer {
+  text-align:center;
+  color:#777;
+  font-size:13px;
+  padding:12px;
+}
 </style>
 </head>
 <body>
 
 <header>
-  <img src="logo.png" alt="Halo Logo" id="homeLogo">
-  <h1>Halo Reeder</h1>
-  <button id="darkToggle" class="icon-btn">🌓 Toggle Dark Mode</button>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <img src="logo.png" alt="Halo Logo" style="height:32px;">
+    <h1>Halo Reeder</h1>
+  </div>
+  <div>
+    <select id="voiceSelect"></select>
+    <button id="darkToggle" class="icon-btn">🌓</button>
+  </div>
 </header>
 
 <main>
-  <!-- IMAGE INPUT -->
   <div class="card">
     <button id="pickImage" class="btn">Pick Image</button>
     <button id="cameraCapture" class="btn ghost">Camera</button>
     <input type="file" id="fileInput" accept="image/*" style="display:none">
-    <video id="cameraStream" autoplay style="display:none; border-radius:8px; margin-top:12px;"></video>
+    <video id="cameraStream" autoplay style="display:none; width:100%; margin-top:12px; border-radius:8px;"></video>
     <img id="imagePreview" src="">
   </div>
 
-  <!-- TEXT + TOOLS -->
   <div class="card">
     <textarea id="textOutput" placeholder="OCR text will appear here..." rows="6"></textarea>
     <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
       <button id="speakBtn" class="btn">Speak</button>
       <button id="copyBtn" class="btn ghost">Copy</button>
       <button id="downloadBtn" class="btn ghost">Download</button>
-      <select id="voiceSelect"></select>
     </div>
   </div>
 </main>
 
-<!-- DICTIONARY POPUP -->
 <div id="dictionaryPopup">
   <h3 id="dictWord"></h3>
   <p id="dictDef">Loading...</p>
   <button id="closeDict" class="btn ghost">Close</button>
 </div>
 
-<footer>Halo Reeder — Blue Theme | Mobile-first | GitHub Pages Ready</footer>
+<footer>Halo Reeder — Blue Theme | Clean | Mobile-first | Home Screen Ready</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js"></script>
 <script>
@@ -146,14 +173,14 @@ document.getElementById("darkToggle").onclick = () => {
   document.body.classList.toggle("dark");
 };
 
-/* PICK IMAGE */
+/* IMAGE PICKING */
 const pickImage = document.getElementById("pickImage");
 const fileInput = document.getElementById("fileInput");
 const imagePreview = document.getElementById("imagePreview");
 pickImage.onclick = () => fileInput.click();
 fileInput.onchange = e => {
   const file = e.target.files[0];
-  if(!file) return;
+  if (!file) return;
   const url = URL.createObjectURL(file);
   imagePreview.src = url;
   recognizeText(url);
@@ -164,10 +191,10 @@ const camBtn = document.getElementById("cameraCapture");
 const camStream = document.getElementById("cameraStream");
 let stream;
 camBtn.onclick = async () => {
-  if(!stream){
-    stream = await navigator.mediaDevices.getUserMedia({video:true});
+  if (!stream) {
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
     camStream.srcObject = stream;
-    camStream.style.display='block';
+    camStream.style.display = "block";
   } else {
     const track = stream.getVideoTracks()[0];
     const cap = new ImageCapture(track);
@@ -180,63 +207,67 @@ camBtn.onclick = async () => {
 
 /* OCR */
 const textOutput = document.getElementById("textOutput");
-function recognizeText(url){
-  Tesseract.recognize(url, "eng", {logger:m=>console.log(m)})
+function recognizeText(url) {
+  Tesseract.recognize(url, "eng", { logger: m => console.log(m) })
     .then(res => textOutput.value = res.data.text);
 }
 
 /* TTS */
 const voiceSelect = document.getElementById("voiceSelect");
-function loadVoices(){
-  voiceSelect.innerHTML='';
-  speechSynthesis.getVoices().forEach(v=>{
+function loadVoices() {
+  voiceSelect.innerHTML = "";
+  speechSynthesis.getVoices().forEach(v => {
     const opt = document.createElement("option");
-    opt.value=v.name;
-    opt.textContent=`${v.name} (${v.lang})`;
+    opt.value = v.name;
+    opt.textContent = `${v.name} (${v.lang})`;
     voiceSelect.appendChild(opt);
   });
 }
 speechSynthesis.onvoiceschanged = loadVoices;
 loadVoices();
-document.getElementById("speakBtn").onclick = ()=>{
-  if(!textOutput.value) return;
+document.getElementById("speakBtn").onclick = () => {
+  if (!textOutput.value) return;
   const u = new SpeechSynthesisUtterance(textOutput.value);
-  const v = speechSynthesis.getVoices().find(v=>v.name===voiceSelect.value);
-  u.voice=v;
+  u.voice = speechSynthesis.getVoices().find(v => v.name === voiceSelect.value);
   speechSynthesis.speak(u);
 };
 
 /* COPY & DOWNLOAD */
-document.getElementById("copyBtn").onclick = ()=> navigator.clipboard.writeText(textOutput.value);
-document.getElementById("downloadBtn").onclick = ()=>{
-  const blob=new Blob([textOutput.value],{type:'text/plain'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='text.txt';
+document.getElementById("copyBtn").onclick = () => navigator.clipboard.writeText(textOutput.value);
+document.getElementById("downloadBtn").onclick = () => {
+  const blob = new Blob([textOutput.value], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "text.txt";
   a.click();
 };
 
-/* DICTIONARY POPUP */
+/* DICTIONARY */
 const dictPopup = document.getElementById("dictionaryPopup");
 const dictWord = document.getElementById("dictWord");
 const dictDef  = document.getElementById("dictDef");
 const closeDict = document.getElementById("closeDict");
-textOutput.addEventListener("dblclick", async ()=>{
-  const sel=window.getSelection().toString() ||
-           textOutput.value.substring(textOutput.selectionStart,textOutput.selectionEnd);
-  if(!sel.trim()) return;
-  dictWord.textContent=sel;
-  dictDef.textContent='Loading...';
-  dictPopup.style.display='block';
-  try{
-    const r=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${sel}`);
-    const d=await r.json();
+
+textOutput.addEventListener("dblclick", async () => {
+  const selected = window.getSelection().toString() ||
+                   textOutput.value.substring(textOutput.selectionStart, textOutput.selectionEnd);
+  if (!selected.trim()) return;
+  dictWord.textContent = selected;
+  dictDef.textContent = "Loading...";
+  dictPopup.style.display = "block";
+  try {
+    const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${selected}`);
+    const d = await r.json();
     if(d[0]?.meanings){
-      dictDef.innerHTML=d[0].meanings.map(m=>`<b>${m.partOfSpeech}</b>: ${m.definitions[0].definition}`).join("<br><br>");
-    } else dictDef.textContent='No definition found.';
-  }catch{ dictDef.textContent='Error fetching definition.'; }
+      dictDef.innerHTML = d[0].meanings.map(m =>
+        `<b>${m.partOfSpeech}</b>: ${m.definitions[0].definition}`
+      ).join("<br><br>");
+    } else dictDef.textContent = "No definition found.";
+  } catch {
+    dictDef.textContent = "Error fetching definition.";
+  }
 });
-closeDict.onclick=()=>dictPopup.style.display='none';
+closeDict.onclick = () => dictPopup.style.display = "none";
 </script>
 
 </body>
