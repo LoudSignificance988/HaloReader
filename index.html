@@ -5,52 +5,114 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Halo Reeder</title>
 <link rel="icon" href="data:," />
+
 <style>
 :root {
-  --accent: #2c7be5;
-  --bg: #f3f4f6;
-  --card: #ffffff;
-  --text: #111;
-  --muted: #666;
-  --radius: 10px;
+  --accent:#2c7be5;
+  --bg:#f3f4f6;
+  --card:#ffffff;
+  --text:#111;
+  --muted:#666;
+  --radius:10px;
 }
+
 body {
   margin:0;
   font-family:"Segoe UI",Roboto,Arial,sans-serif;
   background:var(--bg);
   color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  transition:0.3s;
 }
+
+/* DARK MODE FIX */
+.dark {
+  --bg:#0c0c0c;
+  --card:#1a1a1a;
+  --text:#eee;
+}
+
 header {
-  display:flex; justify-content:space-between; align-items:center;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
   padding:12px 18px;
   background:linear-gradient(90deg,#0b63d6,#2c7be5);
   color:#fff;
 }
+
 header h1 { margin:0; font-size:20px; }
-.icon-btn { background:transparent; border:0; color:#fff; cursor:pointer; font-size:18px; padding:6px; border-radius:6px; }
-.icon-btn:hover { background: rgba(255,255,255,0.1); }
+
+.icon-btn {
+  background:transparent;
+  border:0;
+  color:#fff;
+  cursor:pointer;
+  font-size:18px;
+  padding:6px;
+  border-radius:6px;
+}
+
 main { max-width:1100px; margin:18px auto; padding:16px; }
-.card { background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(15,15,15,0.04); margin-bottom:12px; }
-button.btn { background:var(--accent); border:0; color:#fff; padding:8px 10px; border-radius:8px; cursor:pointer; }
-button.btn.ghost { background:transparent; color:var(--accent); border:1px solid rgba(44,123,229,0.12); }
-textarea, input, select { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; font-size:16px; }
-#imagePreview { max-width:100%; margin-top:12px; border-radius:8px; }
+
+.card {
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:12px;
+  box-shadow:0 6px 18px rgba(15,15,15,0.04);
+  margin-bottom:12px;
+}
+
+button.btn {
+  background:var(--accent);
+  border:0;
+  color:#fff;
+  padding:8px 10px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+button.btn.ghost {
+  background:transparent;
+  color:var(--accent);
+  border:1px solid rgba(44,123,229,0.25);
+}
+
+textarea, input, select {
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
+
+#imagePreview {
+  max-width:100%;
+  margin-top:12px;
+  border-radius:8px;
+}
+
+/* DICTIONARY POPUP */
 #dictionaryPopup {
   display:none;
   position:fixed;
   top:50%; left:50%;
   transform:translate(-50%,-50%);
   background:var(--card);
-  padding:16px;
+  padding:20px;
   border-radius:10px;
-  box-shadow:0 6px 20px rgba(0,0,0,0.2);
+  box-shadow:0 6px 20px rgba(0,0,0,0.4);
   max-width:80%;
   z-index:999;
 }
-#dictionaryPopup h3 { margin-top:0; }
-#dictionaryPopup button { margin-top:12px; }
-footer { text-align:center; color:#777; font-size:13px; padding:12px; }
-@media(max-width:720px){ header { flex-direction:column; align-items:flex-start; gap:8px; } }
+
+footer {
+  text-align:center;
+  color:#777;
+  font-size:13px;
+  padding:12px;
+}
+
 </style>
 </head>
 <body>
@@ -62,19 +124,22 @@ footer { text-align:center; color:#777; font-size:13px; padding:12px; }
   </div>
   <div>
     <select id="voiceSelect"></select>
-    <button id="darkModeBtn" class="icon-btn" title="Toggle Dark Mode">🌓</button>
+    <button id="darkToggle" class="icon-btn">🌓</button>
   </div>
 </header>
 
 <main>
+
+  <!-- IMAGE INPUT -->
   <div class="card">
     <button id="pickImage" class="btn">Pick Image</button>
     <button id="cameraCapture" class="btn ghost">Camera</button>
     <input type="file" id="fileInput" accept="image/*" style="display:none">
     <video id="cameraStream" autoplay style="display:none; width:100%; margin-top:12px; border-radius:8px;"></video>
-    <img id="imagePreview" src="" alt="">
+    <img id="imagePreview" src="">
   </div>
 
+  <!-- TEXT + TOOLS -->
   <div class="card">
     <textarea id="textOutput" placeholder="OCR text will appear here..." rows="6"></textarea>
     <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
@@ -83,135 +148,140 @@ footer { text-align:center; color:#777; font-size:13px; padding:12px; }
       <button id="downloadBtn" class="btn ghost">Download</button>
     </div>
   </div>
+
 </main>
 
+<!-- DICTIONARY POPUP -->
 <div id="dictionaryPopup">
   <h3 id="dictWord"></h3>
   <p id="dictDef">Loading...</p>
   <button id="closeDict" class="btn ghost">Close</button>
 </div>
 
-<footer>Halo Reeder — Blue Theme | Mobile-first | GitHub Pages ready</footer>
+<footer>Halo Reeder — Blue Theme | Clean | Mobile-first</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js"></script>
 <script>
-// Dark Mode
-const darkBtn = document.getElementById('darkModeBtn');
-darkBtn.onclick = () => {
-  if(document.body.style.background==='black'){
-    document.body.style.background = '#f3f4f6';
-    document.body.style.color = '#111';
-  } else {
-    document.body.style.background = 'black';
-    document.body.style.color = '#fff';
-  }
+
+/* DARK MODE */
+document.getElementById("darkToggle").onclick = () => {
+  document.body.classList.toggle("dark");
 };
 
-// Image Picking
-const pickImageBtn = document.getElementById('pickImage');
-const fileInput = document.getElementById('fileInput');
-const imagePreview = document.getElementById('imagePreview');
-pickImageBtn.onclick = () => fileInput.click();
+/* PICK IMAGE */
+const pickImage = document.getElementById("pickImage");
+const fileInput = document.getElementById("fileInput");
+const imagePreview = document.getElementById("imagePreview");
+
+pickImage.onclick = () => fileInput.click();
+
 fileInput.onchange = e => {
   const file = e.target.files[0];
-  if(file){
-    const url = URL.createObjectURL(file);
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  imagePreview.src = url;
+  recognizeText(url);
+};
+
+/* CAMERA */
+const camBtn = document.getElementById("cameraCapture");
+const camStream = document.getElementById("cameraStream");
+let stream;
+
+camBtn.onclick = async () => {
+  if (!stream) {
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    camStream.srcObject = stream;
+    camStream.style.display = "block";
+  } else {
+    const track = stream.getVideoTracks()[0];
+    const cap = new ImageCapture(track);
+    const blob = await cap.takePhoto();
+    const url = URL.createObjectURL(blob);
     imagePreview.src = url;
     recognizeText(url);
   }
 };
 
-// Camera Capture
-const camBtn = document.getElementById('cameraCapture');
-const camStream = document.getElementById('cameraStream');
-let stream;
-camBtn.onclick = async () => {
-  if(!stream){
-    stream = await navigator.mediaDevices.getUserMedia({video:true});
-    camStream.srcObject = stream;
-    camStream.style.display='block';
-  } else {
-    const track = stream.getVideoTracks()[0];
-    const imageCapture = new ImageCapture(track);
-    imageCapture.takePhoto().then(blob=>{
-      const url = URL.createObjectURL(blob);
-      imagePreview.src = url;
-      recognizeText(url);
-    });
-  }
-};
+/* OCR */
+const textOutput = document.getElementById("textOutput");
 
-// OCR
-const textOutput = document.getElementById('textOutput');
-function recognizeText(imgUrl){
-  Tesseract.recognize(imgUrl, 'eng', {logger: m=>console.log(m)})
-    .then(({data:{text}})=> textOutput.value = text);
+function recognizeText(url) {
+  Tesseract.recognize(url, "eng", { logger: m => console.log(m) })
+    .then(res => textOutput.value = res.data.text);
 }
 
-// Web Speech TTS
-const speakBtn = document.getElementById('speakBtn');
-const voiceSelect = document.getElementById('voiceSelect');
-function loadVoices(){
-  const voices = speechSynthesis.getVoices();
-  voiceSelect.innerHTML = '';
-  voices.forEach(v=>{
-    const option = document.createElement('option');
-    option.value = v.name;
-    option.textContent = `${v.name} (${v.lang})`;
-    voiceSelect.appendChild(option);
+/* TTS */
+const voiceSelect = document.getElementById("voiceSelect");
+
+function loadVoices() {
+  voiceSelect.innerHTML = "";
+  speechSynthesis.getVoices().forEach(v => {
+    const opt = document.createElement("option");
+    opt.value = v.name;
+    opt.textContent = `${v.name} (${v.lang})`;
+    voiceSelect.appendChild(opt);
   });
 }
 speechSynthesis.onvoiceschanged = loadVoices;
 loadVoices();
 
-function speakText(text){
-  if(!text) return;
-  const utter = new SpeechSynthesisUtterance(text);
-  const selectedVoice = voiceSelect.value;
-  utter.voice = speechSynthesis.getVoices().find(v=>v.name===selectedVoice);
-  speechSynthesis.speak(utter);
-}
+document.getElementById("speakBtn").onclick = () => {
+  if (!textOutput.value) return;
+  const u = new SpeechSynthesisUtterance(textOutput.value);
+  const v = speechSynthesis.getVoices().find(v => v.name === voiceSelect.value);
+  u.voice = v;
+  speechSynthesis.speak(u);
+};
 
-speakBtn.onclick = () => speakText(textOutput.value);
+/* COPY */
+document.getElementById("copyBtn").onclick =
+  () => navigator.clipboard.writeText(textOutput.value);
 
-// Keyboard input speaking
-textOutput.addEventListener('input', e=>{
-  // Optionally speak on Enter
-  if(e.inputType==='insertLineBreak'){
-    speakText(textOutput.value);
-  }
-});
-
-// Copy & Download
-document.getElementById('copyBtn').onclick = () => navigator.clipboard.writeText(textOutput.value);
-document.getElementById('downloadBtn').onclick = () => {
-  const blob = new Blob([textOutput.value], {type:'text/plain'});
-  const a = document.createElement('a');
+/* DOWNLOAD */
+document.getElementById("downloadBtn").onclick = () => {
+  const blob = new Blob([textOutput.value], { type: "text/plain" });
+  const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download='text.txt';
+  a.download = "text.txt";
   a.click();
 };
 
-// Dictionary
-const dictPopup = document.getElementById('dictionaryPopup');
-const dictWord = document.getElementById('dictWord');
-const dictDef = document.getElementById('dictDef');
-const closeDict = document.getElementById('closeDict');
-textOutput.addEventListener('dblclick', async ()=>{
-  const selection = window.getSelection().toString() || textOutput.value.substring(textOutput.selectionStart,textOutput.selectionEnd);
-  if(!selection) return;
-  dictWord.textContent = selection;
-  dictDef.textContent = 'Loading...';
-  dictPopup.style.display='block';
-  try{
-    const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${selection}`);
-    const data = await res.json();
-    if(data[0] && data[0].meanings){
-      dictDef.innerHTML = data[0].meanings.map(m => `<b>${m.partOfSpeech}</b>: ${m.definitions[0].definition}`).join('<br>');
-    } else dictDef.textContent = 'No definition found';
-  }catch{ dictDef.textContent = 'Error fetching definition'; }
+/* DICTIONARY — DOUBLE TAP WORD */
+const dictPopup = document.getElementById("dictionaryPopup");
+const dictWord = document.getElementById("dictWord");
+const dictDef  = document.getElementById("dictDef");
+const closeDict = document.getElementById("closeDict");
+
+textOutput.addEventListener("dblclick", async () => {
+  const selected = window.getSelection().toString() ||
+                   textOutput.value.substring(textOutput.selectionStart, textOutput.selectionEnd);
+
+  if (!selected.trim()) return;
+
+  dictWord.textContent = selected;
+  dictDef.textContent = "Loading...";
+  dictPopup.style.display = "block";
+
+  try {
+    const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${selected}`);
+    const d = await r.json();
+
+    if (d[0]?.meanings) {
+      dictDef.innerHTML =
+        d[0].meanings.map(m =>
+          `<b>${m.partOfSpeech}</b>: ${m.definitions[0].definition}`
+        ).join("<br><br>");
+    } else {
+      dictDef.textContent = "No definition found.";
+    }
+  } catch {
+    dictDef.textContent = "Error fetching definition.";
+  }
 });
-closeDict.onclick = ()=> dictPopup.style.display='none';
+
+closeDict.onclick = () => dictPopup.style.display = "none";
+
 </script>
 
 </body>
